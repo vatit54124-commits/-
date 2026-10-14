@@ -1,0 +1,5422 @@
+<!DOCTYPE html>
+<html lang="th" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance & Engineering Support Dashboard</title>
+    <!-- Google Fonts: Prompt & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6.5.2 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Chart.js 4.4.2 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        :root {
+            --app-font: 'Prompt', 'Plus Jakarta Sans', sans-serif;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-alt: #f1f5f9;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-subtle: #e2e8f0;
+            --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+            --header-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --table-header-bg: #f8fafc;
+            --table-header-text: #475569;
+            --table-hover: #f1f5f9;
+            --accent-primary: #3b82f6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+        }
+
+        [data-bs-theme="dark"] {
+            --bg-body: #0b0f19;
+            --bg-card: #151d30;
+            --bg-card-alt: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-subtle: #243049;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 4px 10px -2px rgba(0, 0, 0, 0.3);
+            --header-gradient: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            --table-header-bg: #192238;
+            --table-header-text: #cbd5e1;
+            --table-hover: #1c2742;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: var(--app-font);
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Glassmorphism Cards */
+        .dashboard-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.1);
+        }
+
+        /* Header Styling */
+        .app-header {
+            background: var(--header-gradient);
+            color: #ffffff;
+            border-radius: 20px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%);
+            pointer-events: none;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-card);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .kpi-icon-wrapper {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .kpi-val {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.5px;
+        }
+
+        .kpi-label {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Status Pills & Badges */
+        .badge-pill-custom {
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-pill-btn {
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .filter-pill-btn:hover {
+            background-color: var(--bg-card-alt);
+            color: var(--text-main);
+        }
+
+        .filter-pill-btn.active {
+            background-color: var(--accent-primary);
+            color: #ffffff;
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Filter Section */
+        .filter-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .form-label-custom {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border-color: var(--border-subtle);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.88rem;
+            padding: 8px 12px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Table Styling */
+        .table-responsive-custom {
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            max-height: 580px;
+            overflow-y: auto;
+        }
+
+        .custom-table {
+            margin-bottom: 0;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .custom-table thead th {
+            position: sticky;
+            top: 0;
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 14px 12px;
+            border-bottom: 2px solid var(--border-subtle);
+            white-space: nowrap;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .custom-table thead th:hover {
+            background-color: var(--border-subtle);
+        }
+
+        .custom-table thead th .sort-icon {
+            font-size: 0.75rem;
+            margin-left: 6px;
+            opacity: 0.4;
+        }
+
+        .custom-table thead th.sorted .sort-icon {
+            opacity: 1;
+            color: var(--accent-primary);
+        }
+
+        .custom-table tbody td {
+            padding: 12px 14px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+            transition: background-color 0.15s ease;
+        }
+
+        .custom-table tbody tr:hover td {
+            background-color: var(--table-hover);
+        }
+
+        .custom-table tbody tr {
+            cursor: pointer;
+        }
+
+        /* Pulse Animation for Live Connection */
+        .live-pulse {
+            width: 9px;
+            height: 9px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-green 1.8s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .offline-dot {
+            width: 9px;
+            height: 9px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Pagination Controls */
+        .pagination-custom .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+
+        .pagination-custom .page-item.active .page-link {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: #ffffff;
+        }
+
+        .pagination-custom .page-item.disabled .page-link {
+            opacity: 0.5;
+            background-color: var(--bg-card);
+            color: var(--text-muted);
+        }
+
+        /* Modal Details */
+        .modal-content {
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 20px 24px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-subtle);
+            padding: 16px 24px;
+        }
+
+        .detail-item-box {
+            background-color: var(--bg-card-alt);
+            border-radius: 12px;
+            padding: 12px 16px;
+            height: 100%;
+        }
+
+        .detail-item-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .detail-item-val {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-3 px-xl-5">
+
+    <!-- Top Navigation / Executive Header -->
+    <header class="app-header">
+        <div class="row align-items-center g-3">
+            <div class="col-12 col-lg-7">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary bg-opacity-25 p-3 rounded-4 border border-primary border-opacity-25 d-none d-sm-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px;">
+                        <i class="fa-solid fa-bolt-lightning text-warning fs-3"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <h2 class="fw-bold mb-0 text-white tracking-tight">Maintenance Support Dashboard</h2>
+                            <span id="syncStatusBadge" class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">
+                                <span class="live-pulse me-1"></span> เชื่อมต่อ Google Sheets สด
+                            </span>
+                        </div>
+                        <p class="text-light opacity-75 small mb-0">
+                            ระบบติดตามและรายงานสถานะงานสนับสนุน ช่างไฟฟ้าและเครื่องจักรกล (โรงงาน & อาคาร)
+                            <span id="syncTimeText" class="ms-2 opacity-75">| กำลังเริ่มต้นระบบ...</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-5 text-lg-end">
+                <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
+                    <button class="btn btn-outline-light btn-sm rounded-pill px-3 py-2 shadow-sm" id="btnRefresh" onclick="syncGoogleSheets()">
+                        <i class="fa-solid fa-arrows-rotate me-1"></i> <span class="d-none d-sm-inline">รีเฟรชสด</span>
+                    </button>
+                    <a href="https://docs.google.com/spreadsheets/d/1tWy2VQSaDTqVB04w8KEKlK7RTIVPLdgnCmysPabFS0g/edit?gid=1781004861#gid=1781004861" target="_blank" class="btn btn-success btn-sm rounded-pill px-3 py-2 shadow-sm">
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> <span class="d-none d-sm-inline">เปิด</span> Google Sheets
+                    </a>
+                    <button class="btn btn-primary btn-sm rounded-pill px-3 py-2 shadow-sm" onclick="exportToCSV()">
+                        <i class="fa-solid fa-file-excel me-1"></i> ส่งออก CSV
+                    </button>
+                    <button class="btn btn-outline-light btn-sm rounded-circle p-2 shadow-sm" id="themeToggleBtn" onclick="toggleTheme()" title="สลับโหมด Dark/Light" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Quick Filter Pills -->
+    <div class="d-flex align-items-center gap-2 mb-3 overflow-x-auto pb-2" id="quickPillsContainer">
+        <span class="text-muted small fw-bold me-1 text-nowrap"><i class="fa-solid fa-bolt me-1"></i>กรองด่วน:</span>
+        <button class="filter-pill-btn active" data-pill="all" onclick="applyQuickPill('all')">ทั้งหมด (<span id="pillCountAll">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="completed" onclick="applyQuickPill('completed')">✅ เสร็จแล้ว (<span id="pillCountCompleted">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="pending" onclick="applyQuickPill('pending')">⏳ กำลังดำเนินการ (<span id="pillCountPending">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="el" onclick="applyQuickPill('el')">⚡ ช่างไฟฟ้า (EL) (<span id="pillCountEL">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="mc" onclick="applyQuickPill('mc')">⚙️ ช่างกล (MC) (<span id="pillCountMC">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="repair" onclick="applyQuickPill('repair')">🛠️ งานซ่อม (Repair) (<span id="pillCountRepair">0</span>)</button>
+        <button class="filter-pill-btn" data-pill="pm" onclick="applyQuickPill('pm')">📋 แผน PM (<span id="pillCountPM">0</span>)</button>
+    </div>
+
+    <!-- Executive Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <!-- KPI 1: งานทั้งหมด -->
+        <div class="col-6 col-lg-3 col-xl">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">งานทั้งหมดในระบบ</div>
+                        <div class="kpi-val text-primary" id="kpiTotal">0</div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center small">
+                    <span class="text-muted"><i class="fa-solid fa-bolt text-warning me-1"></i>EL: <strong id="kpiElCount">0</strong></span>
+                    <span class="text-muted"><i class="fa-solid fa-gear text-info me-1"></i>MC: <strong id="kpiMcCount">0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 2: งานเสร็จแล้ว -->
+        <div class="col-6 col-lg-3 col-xl">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">งานเสร็จสิ้นแล้ว</div>
+                        <div class="kpi-val text-success" id="kpiCompleted">0</div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top border-light-subtle">
+                    <div class="d-flex justify-content-between align-items-center small mb-1">
+                        <span class="text-muted">ความสำเร็จ</span>
+                        <strong class="text-success" id="kpiCompletedPct">0%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div id="kpiProgressBar" class="progress-bar bg-success rounded-pill" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 3: งานกำลังดำเนินการ -->
+        <div class="col-6 col-lg-3 col-xl">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">กำลังดำเนินการ / ค้าง</div>
+                        <div class="kpi-val text-warning" id="kpiPending">0</div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center small">
+                    <span class="text-muted">สถานะงานค้าง</span>
+                    <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill" id="kpiPendingBadge">ติดตามผล</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 4: งานซ่อมบำรุงตามแผน (PM) -->
+        <div class="col-6 col-lg-3 col-xl">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">งานซ่อมตามแผน (PM)</div>
+                        <div class="kpi-val text-info" id="kpiPmCount">0</div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-info bg-opacity-10 text-info">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center small">
+                    <span class="text-muted">สัดส่วน PM Plan</span>
+                    <strong class="text-info" id="kpiPmPct">0%</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 5: ซ่อมฉุกเฉิน / CMMS -->
+        <div class="col-12 col-lg-4 col-xl">
+            <div class="kpi-card">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="kpi-label">งานซ่อม Repair / CMMS</div>
+                        <div class="kpi-val text-danger" id="kpiRepairCount">0</div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-danger bg-opacity-10 text-danger">
+                        <i class="fa-solid fa-wrench"></i>
+                    </div>
+                </div>
+                <div class="mt-2 pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center small">
+                    <span class="text-muted">CMMS: <strong id="kpiCmmsCount">0</strong></span>
+                    <span class="text-muted">Repair ทั่วไป: <strong id="kpiGeneralRepairCount">0</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Section -->
+    <div class="filter-box">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="bg-primary text-white p-2 rounded-3 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="fa-solid fa-filter fs-6"></i>
+                </span>
+                <h5 class="fw-bold mb-0">ตัวกรองและค้นหาข้อมูล (Advanced Filters)</h5>
+                <span id="activeFilterBadge" class="badge bg-secondary-subtle text-secondary rounded-pill ms-2">ทั้งหมด</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="resetFilters()">
+                    <i class="fa-solid fa-rotate-left me-1"></i> ล้างตัวกรอง
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <!-- ค้นหาคำค้น -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <label class="form-label-custom"><i class="fa-solid fa-magnifying-glass"></i> ค้นหาข้อความ (รายละเอียด / หมายเหตุ)</label>
+                <div class="input-group input-group-sm">
+                    <input type="text" id="filterSearch" class="form-control" placeholder="พิมพ์คำค้น เช่น แอร์, ปั้มกาว, หลอดไฟ, ปิยะ..." oninput="debounceFilter()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()" title="ล้างข้อความ"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- วันที่เริ่มต้น -->
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label-custom"><i class="fa-regular fa-calendar"></i> วันที่เริ่มต้น</label>
+                <input type="date" id="filterStartDate" class="form-control form-control-sm" onchange="filterData()">
+            </div>
+
+            <!-- วันที่สิ้นสุด -->
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label-custom"><i class="fa-regular fa-calendar-check"></i> วันที่สิ้นสุด</label>
+                <input type="date" id="filterEndDate" class="form-control form-control-sm" onchange="filterData()">
+            </div>
+
+            <!-- เครื่องจักร -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="form-label-custom"><i class="fa-solid fa-industry"></i> เครื่องจักร (Machine)</label>
+                <select id="filterMachine" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- หน่วยงาน -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="form-label-custom"><i class="fa-solid fa-building"></i> หน่วยงาน (Dept)</label>
+                <select id="filterDept" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- ผู้รับผิดชอบ -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-label-custom"><i class="fa-solid fa-user-gear"></i> ผู้รับผิดชอบ (Assignee)</label>
+                <select id="filterAssignee" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- ประเภทช่าง -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="form-label-custom"><i class="fa-solid fa-users-gear"></i> ประเภทช่าง (Tech)</label>
+                <select id="filterTechType" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- ประเภทงาน -->
+            <div class="col-6 col-md-4 col-lg-3">
+                <label class="form-label-custom"><i class="fa-solid fa-toolbox"></i> ประเภทงาน (Job Type)</label>
+                <select id="filterJobType" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- ความสำคัญ -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="form-label-custom"><i class="fa-solid fa-circle-exclamation"></i> ความสำคัญ</label>
+                <select id="filterPriority" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+
+            <!-- สถานะ -->
+            <div class="col-6 col-md-4 col-lg-2">
+                <label class="form-label-custom"><i class="fa-solid fa-list-check"></i> สถานะ (Status)</label>
+                <select id="filterStatus" class="form-select form-select-sm" onchange="filterData()">
+                    <option value="">-- ทั้งหมด --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row g-4 mb-4">
+        <!-- Chart 1: สถิติจำนวนงานตามเครื่องจักร -->
+        <div class="col-12 col-xl-6">
+            <div class="dashboard-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1"><i class="fa-solid fa-chart-column text-primary me-2"></i>สถิติจำนวนงานตามเครื่องจักร / อุปกรณ์ (Top 10)</h6>
+                        <small class="text-muted">เครื่องจักรและจุดติดตั้งที่มีการเรียกซ่อมและบำรุงรักษาสูงสุด</small>
+                    </div>
+                </div>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="machineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart 2: ภาระงานและผลงานตามผู้รับผิดชอบ -->
+        <div class="col-12 col-xl-6">
+            <div class="dashboard-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-1"><i class="fa-solid fa-user-check text-success me-2"></i>ภาระงานและผลงานตามผู้รับผิดชอบ (By Technician)</h6>
+                        <small class="text-muted">เปรียบเทียบงานที่เสร็จสิ้นแล้ว กับงานที่กำลังดำเนินการของแต่ละบุคคล</small>
+                    </div>
+                </div>
+                <div style="position: relative; height: 320px;">
+                    <canvas id="technicianChart"></canvas>
+                </div>
+                <div id="technicianSummary" class="d-flex flex-wrap gap-2 justify-content-center mt-3 pt-2 border-top border-subtle"></div>
+            </div>
+        </div>
+
+        <!-- Chart 3: สัดส่วนประเภทงานซ่อมบำรุง -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="dashboard-card p-4 h-100">
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-1"><i class="fa-solid fa-chart-pie text-info me-2"></i>สัดส่วนประเภทงาน (Job Type)</h6>
+                    <small class="text-muted">Repair CMMS vs Repair vs PM Plan</small>
+                </div>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="jobTypeChart"></canvas>
+                </div>
+                <div id="jobTypeSummary" class="d-flex flex-wrap gap-2 justify-content-center mt-3 pt-2 border-top border-subtle"></div>
+            </div>
+        </div>
+
+        <!-- Chart 4: สัดส่วนสายงานช่าง (EL vs MC) -->
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="dashboard-card p-4 h-100">
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-1"><i class="fa-solid fa-network-wired text-warning me-2"></i>สัดส่วนสายงานช่าง (Tech Type)</h6>
+                    <small class="text-muted">ช่างไฟฟ้า (EL/GL) เทียบกับ ช่างกล (MC/GL)</small>
+                </div>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="techTypeChart"></canvas>
+                </div>
+                <div id="techTypeSummary" class="d-flex flex-wrap gap-2 justify-content-center mt-3 pt-2 border-top border-subtle"></div>
+            </div>
+        </div>
+
+        <!-- Chart 5: สัดส่วนความสำคัญและสถานะ -->
+        <div class="col-12 col-xl-4">
+            <div class="dashboard-card p-4 h-100">
+                <div class="mb-3">
+                    <h6 class="fw-bold mb-1"><i class="fa-solid fa-bullseye text-danger me-2"></i>ระดับความสำคัญของงาน (Priority)</h6>
+                    <small class="text-muted">สัดส่วนงานด่วน/สูง ปานกลาง และทั่วไป</small>
+                </div>
+                <div style="position: relative; height: 260px;">
+                    <canvas id="priorityChart"></canvas>
+                </div>
+                <div id="prioritySummary" class="d-flex flex-wrap gap-2 justify-content-center mt-3 pt-2 border-top border-subtle"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table Section -->
+    <div class="dashboard-card p-4 mb-4">
+        <!-- Table Toolbar -->
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-1"><i class="fa-solid fa-table-list text-primary me-2"></i>ตารางบันทึกข้อมูลงานซ่อมบำรุงทั้งหมด</h5>
+                <small class="text-muted">
+                    แสดง <strong class="text-primary" id="showingCount">0</strong> รายการ จากที่กรองได้ <strong id="filteredTotalCount">0</strong> รายการ (ข้อมูลทั้งหมด <span id="totalDatabaseCount">0</span> รายการ)
+                </small>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-muted small text-nowrap">แสดงต่อหน้า:</label>
+                <select id="pageSizeSelect" class="form-select form-select-sm" style="width: 90px;" onchange="changePageSize()">
+                    <option value="15">15</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">ทั้งหมด</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-responsive-custom">
+            <table class="table custom-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('index')"># <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('dateAssigned')">วันที่มอบหมาย <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('dateDue')">กำหนดเสร็จ <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('dateDone')">เสร็จจริง <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('detail')" style="min-width: 250px;">รายละเอียดงาน <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('machine')">เครื่องจักร <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('dept')">หน่วยงาน <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('assignee')">ผู้รับผิดชอบ <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('techType')">ประเภทช่าง <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('jobType')">ประเภทงาน <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('priority')">ความสำคัญ <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th onclick="sortTable('status')">สถานะ <span class="sort-icon"><i class="fa-solid fa-sort"></i></span></th>
+                        <th class="text-center">ดูงาน</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Dynamic Rows Rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="d-flex align-items-center justify-content-between mt-3 flex-wrap gap-2">
+            <div class="text-muted small" id="pageInfoText">
+                หน้า 1 จาก 1
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm pagination-custom mb-0" id="paginationContainer">
+                    <!-- Dynamic Pagination -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+</div>
+
+<!-- Work Order Detail Modal -->
+<div class="modal fade" id="workOrderDetailModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="bg-primary text-white p-2 rounded-3">
+                        <i class="fa-solid fa-file-lines"></i>
+                    </span>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="modalLabel">รายละเอียดใบงานซ่อมบำรุง</h5>
+                        <small class="text-muted" id="modalSubTitle">รหัสลำดับงาน: #1</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Status & Priority Banner -->
+                <div class="d-flex align-items-center justify-content-between p-3 rounded-4 mb-3" id="modalStatusBanner" style="background-color: var(--bg-card-alt);">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">สถานะงาน:</span>
+                        <span id="modalStatusBadge" class="badge-pill-custom"></span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small">ระดับความสำคัญ:</span>
+                        <span id="modalPriorityBadge" class="badge-pill-custom"></span>
+                    </div>
+                </div>
+
+                <!-- Job Detail Box -->
+                <div class="mb-4">
+                    <label class="detail-item-label"><i class="fa-solid fa-wrench me-1"></i> รายละเอียดงานซ่อมบำรุง</label>
+                    <div class="p-3 rounded-3 border border-subtle bg-card" id="modalDetail" style="font-size: 1.05rem; font-weight: 500; line-height: 1.6;">
+                        -
+                    </div>
+                </div>
+
+                <!-- Timeline Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-regular fa-calendar-plus me-1 text-primary"></i> วันที่มอบหมาย</div>
+                            <div class="detail-item-val" id="modalDateAssigned">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-regular fa-clock me-1 text-warning"></i> กำหนดวันเสร็จ</div>
+                            <div class="detail-item-val" id="modalDateDue">-</div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-regular fa-calendar-check me-1 text-success"></i> เสร็จสิ้นจริง</div>
+                            <div class="detail-item-val" id="modalDateDone">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meta Details Grid -->
+                <div class="row g-3">
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-industry me-1"></i> เครื่องจักร / อุปกรณ์</div>
+                            <div class="detail-item-val" id="modalMachine">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-building me-1"></i> หน่วยงาน / แผนก</div>
+                            <div class="detail-item-val" id="modalDept">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-user-gear me-1"></i> ช่างผู้รับผิดชอบ</div>
+                            <div class="detail-item-val text-primary" id="modalAssignee">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-bolt me-1"></i> ประเภทช่าง</div>
+                            <div class="detail-item-val" id="modalTechType">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-toolbox me-1"></i> ประเภทงาน</div>
+                            <div class="detail-item-val" id="modalJobType">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="detail-item-box">
+                            <div class="detail-item-label"><i class="fa-solid fa-comment-dots me-1"></i> หมายเหตุ / อื่นๆ</div>
+                            <div class="detail-item-val" id="modalNote">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Sheets Configuration & Scripts -->
+<script>
+    const GOOGLE_SHEET_ID = '1tWy2VQSaDTqVB04w8KEKlK7RTIVPLdgnCmysPabFS0g';
+    const GOOGLE_SHEET_GID = '1781004861';
+
+    // ข้อมูลเริ่มต้น 253 รายการจาก Google Sheets
+    const EMBEDDED_INITIAL_DATA = [
+    {
+        "machine":  "Office",
+        "dateAssigned":  "27/6/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "27/6/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "27/6/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เป่าฝุ่นทำความสะอาด Smoke detertor",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "27/6/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "27/6/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "27/6/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟแสงสว่าง จุดเช็คงาน QC ไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "29/6/2026",
+        "dept":  "Glue",
+        "dateDone":  "29/6/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "29/6/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ต่อไฟระบบไฟสั้งปั้มกาว 24V DF",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "30/6/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "30/6/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "30/6/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟแสงสว่างจุดวารนม้วน บริเวณ M1",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "30/6/2026",
+        "dept":  "Glue",
+        "dateDone":  "30/6/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "30/6/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ระบบไฟสั้งปั้มกาว 24V Yueli Sf-b,sf-c",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "1/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "1/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "1/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนไฟแสงสว่างห้องน้ำชาย Office ชั้นล่าง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "1/7/2026",
+        "dept":  "Glue",
+        "dateDone":  "1/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "1/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "จ้ำไฟสั่งปั้มกาว Sf-b,Sf-c Yueli",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "1/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "1/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "1/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ี่ยนไฟแสงสว่างห้องน้ำหญิง Office ชั้นสอง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "2/7/2026",
+        "dept":  "Forklift",
+        "dateDone":  "2/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "2/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "รถ LTS-02 สวิชต์พัดลม เปิดไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "2/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "2/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "2/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง AIR Yueli No.4",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "บ่อบำบัด",
+        "dateAssigned":  "2/7/2026",
+        "dept":  "นอกสถานที่",
+        "dateDone":  "",
+        "assignee":  "วาทิต",
+        "jobType":  "Repair",
+        "dateDue":  "30/7/2026",
+        "status":  "กำลังดำเนินการ",
+        "note":  null,
+        "detail":  "ออกแแบระบบไฟฟ้าคอลโทรล บ่อบำบัด OM",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "3/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "3/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "3/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟ แสงสว่าง ข้างโรงงาน ฝั่งคลังม้วน 5 โคม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "3/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "3/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "PM Plan",
+        "dateDue":  "3/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง AIR Yueli No.3",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "3/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "17/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "23/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งโคมไฟสปอร์ตไลท์ ลานจอดรถ LTS",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "6/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "6/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "6/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟห้องน้ำหญิง ชั้นล่าง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "6/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "6/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "6/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คพัดลมตั้งพื้น ต้องใช้มือหมุน ห้องกาว",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "6/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "15/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "16/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็็คแอร์ห้อง พี่ตุ๊ แอร์ไม่เย็น",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "7/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "7/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "7/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟ บริเวณ QC BHS 3โคม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "เครื่องชั่ง",
+        "dateAssigned":  "7/7/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "7/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "7/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนน๊อตโหลดเซลล์เครื่องชั่งคลังม้วน  ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "7/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "7/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "7/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขแอร์น้ำหยด ห้อง IT",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "8/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "8/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "PM Plan",
+        "dateDue":  "8/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง AIR Yueli No.1",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "8/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "8/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "8/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คไฟที่โรงอาหารเบรคเกอร์ทริป",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "บ่อบำบัด",
+        "dateAssigned":  "9/7/2026",
+        "dept":  "ระบบบำบัดน้ำเสีย",
+        "dateDone":  "9/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "11/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คระบบกรองคาบอน ต่อระบบไฟให้กลับมาใช้งานได้",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "9/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "9/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "10/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "สายไฟเมน หน้าประตูโรงงาน (รถชนกำแพง โดนสายไฟ)",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "10/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "10/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "10/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็ค Air ห้อง บัญชี เบรคเกอร์ทริป",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "10/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "11/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "16/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้ั้งโคมไฟแสงสว่าง UFO จุดวางม้วน คลังม้วน 5 โคม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "11/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "20/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "17/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนคาปาซิเตอร์ 80 ไมโครฟารัด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "13/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "13/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "13/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟ บริเวณราง CP ISOWA",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "13/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "13/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "13/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "พัดลมสแปร์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "13/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "13/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "13/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้้ไขพัดลมโรงอาหารฝาหลุด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "14/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "14/7/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "14/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนไฟสปอร์ตไลท์ หน้าโรงงาน",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "14/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "14/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "14/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เป่าฝุุ่่นทำความสะอาดแผงคอยล์ร้อน แอร์ห้องไฟ ISOWA",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "15/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "15/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "15/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ปล็กไฟข้างเครื่อง Isowa",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "16/7/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "24/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "29/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งไฟแสงสว่าง คลังม้วนเต็ม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "16/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "16/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "16/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟห้้องน้ำชาย ชั้น 2",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "17/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "17/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "17/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนตู้ไฟกล้องข้างโรงอาหาร",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "17/7/2026",
+        "dept":  "FG",
+        "dateDone":  "18/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "18/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหน้าจอรถโฟล์คลิฟท์ LTS-02",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "18/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "18/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "18/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟ UFO จุดคัดงาน Qc  บริเวณทางขึ้นบรรได Office",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "20/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "20/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "20/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟบริเวณ M1 Yueli ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "20/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "20/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "20/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟบริเวณ จุดวางม้วน",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "21/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "21/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "21/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟ T5 ห้อง Air com",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "22/7/2026",
+        "dept":  "FG",
+        "dateDone":  "22/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "22/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็ครถ LTS-06 ไม่เบรคไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "22/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "22/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "22/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนไฟแสงสว่่างจุดวางม้วน Yueli",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "23/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "23/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "23/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนไฟหลอดไฟทางเดินหน้า ห้อง HR",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "23/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "23/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "23/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คพััดลม M1 Yueli ไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "23/7/2026",
+        "dept":  "AIR",
+        "dateDone":  "3/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "31/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "Air ห้องชอบพัฒนา ไม่เย็น",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "24/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "25/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "25/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟห้องชอบพัฒนา ไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "24/7/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "24/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "24/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "พัดลม บริเวณ M2 BHS ใบแตก",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "24/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "30/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "31/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟหน้าห้องประชาสัมพันธ์ ไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "25/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "25/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "25/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟหน้้าห้องทำงานเป็นทีม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "เครื่องชั่ง",
+        "dateAssigned":  "29/7/2026",
+        "dept":  "เครื่องชั่ง",
+        "dateDone":  "29/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "29/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คจอเครื่องชั่งตาชังใหย๋ไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "30/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "30/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "30/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟห้องน้ำชายไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "30/7/2026",
+        "dept":  "นอกสถานที่",
+        "dateDone":  "30/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "30/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คโซลินอยล์ที่พีพรอมท์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "31/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "31/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "31/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟห้องบัญชี หลุด 2โคม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "31/7/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "31/7/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "31/7/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โครงพัดลมหลุด จุดรับม้วนออก",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "1/8/2026",
+        "dept":  "อื่นๆ",
+        "dateDone":  "1/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำชั้นเหล็กวาง Roller",
+        "priority":  "ต่ำ",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "1/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "1/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "1/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลูกปืน Roller ไว้เป็นสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "1/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "1/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "2/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คเมนไฟแแสงสว่างป้อมหน้าโรงงานเบรคเกอร์ทรืป",
+        "priority":  "สูง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "2/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "2/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง I CPD-08R Roller มีเสียงดัง",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "2/8/2026",
+        "dept":  "BHS",
+        "dateDone":  "2/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "รา Conreyer ระหว่างราง 1-2 ตัวประคองม้วนเอียง Roll หลุด ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "2/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "2/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตั้งโซ่ราง B-Roll-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "2/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "2/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตั้งโซ่ราง I-Roll-03",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "3/8/2026",
+        "dept":  "AIR",
+        "dateDone":  "3/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "3/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "Air ห้องชอบพัฒนา เช็คน้ำยาแอร์หลังจากไม่เจอจุดรั่ว เช็คซ่ำหลังจาก Supเข้าเช็ค",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "3/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "3/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนแผ่นยางเหยียบพื้นรถ LTS-01,02,03,05,06 BL-El-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "3/8/2026",
+        "dept":  "BHS",
+        "dateDone":  "3/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ปรับตั้งราง Conveyor BHS ราง1",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "4/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "4/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "4/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนท่อกาวรั่ว บนถังพักกาวถังส่งกาว Double Bhs",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "ISOWA",
+        "dateAssigned":  "4/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "4/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "4/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนปั้มกาว กาวรั่วออกปั้ม ถังส่งกาว Single ISOWA",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "4/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "4/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "4/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็็คเปลี่ยนอะไหล่ปั้มกาว ไว้เป็นสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "5/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "5/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "5/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโคมไฟแสงสว่าง บริเวณ Stacker Isowa",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "5/8/2026",
+        "dept":  "FG",
+        "dateDone":  "7/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "7/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็คแบตเตอรี่ น้ำกลั่นแห้ง FG-B-002",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "คลังม้วน",
+        "dateAssigned":  "5/8/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "5/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "5/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ใส่แหวนจักร หัว Millroll เครื่องกรอม้วน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "6/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "6/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "6/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำ Support ยึดโคมไฟพร้อมติดตั้งโคมไฟสปอร์ตไลท์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "6/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "6/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "6/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำ Supportp ยึดโคมไฟ ตรงที่นั่ง รปภ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "พีพรอมท์",
+        "dateAssigned":  "6/8/2026",
+        "dept":  "นอกสถานที่",
+        "dateDone":  "6/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "6/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนซีลกระบอกลมรั่ว ตัวหนีบกระดาษ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "พีพรอมท์",
+        "dateAssigned":  "6/8/2026",
+        "dept":  "นอกสถานที่",
+        "dateDone":  "6/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "6/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ฟิตติ่งเกลี่ยนวขาด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "7/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "7/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "7/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งโคมไฟสปอร์์ตไลท์ จุดนั่งพัก ใกล้ป้อม รปภ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "7/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "7/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "7/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนปั้ลั๊กไฟร้านค้าคนไทย",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "7/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "7/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "7/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนปั้มกาวถังส่งกาว Double BHS",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "7/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "7/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "7/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ถอดเช็คปั้มกาว เปลี่ยนอะไหล่ไว้เป็นสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "8/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลููกปืนราง Roller ท้ายราง Isowa",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "8/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลููกปืนราง Roller ท้ายราง BHS",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "8/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟห้อง HR",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "8/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟห้อง หน้าห้องจัดซื้อ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "8/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนแผ่นรองนั่งฝาปิดแบต รถ LTS-04",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "8/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนแผ่นรองนั่งฝาปิดแบต รถ LTS-05",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "8/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "8/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนแผ่นรองนั่งฝาปิดแบต รถ LTS-06",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัวประคองม้วนM1 ขาเข้า ฝั่ง B แก้ไขตัวประคองม้วนไม่ได้ระดับ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟแสงสว่าง QC BHS  ไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัวประคองม้วนM1 ขาเข้า ฝั่ง A,B ใส่่ตะแกรงปิดช่องตัวประคองม้วน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "วาล์วท่อกาวปั้มส่ง Single BHS เปลี่ยนวาล์วขาเข้า ออกปั้ม ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง CP  Y-CP-08 R สายพานไม่หมุน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "9/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "9/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง CP  Y-CP-16 R สายพานไม่หมุน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer M1 ขาเข้า Yueli  รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer M3 ขาเข้า Yueli รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer M4 ขาเข้า Yueli รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer ขาออก ราง2 Yueli รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer ขาออก ราง5 Yueli รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง conreyer ขาออก ราง6 Yueli รางหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "11/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "11/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "11/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งพัดลมระบายอากาศ คน รถ BL-B-01",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "11/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "11/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "11/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนเบาะรถ BL-E-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "12/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "12/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "12/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขปล๊กชาร์จแบตหลุด ตู้ชาร์จ FG-06",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "12/8/2026",
+        "dept":  "BHS",
+        "dateDone":  "12/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "12/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้อประคองเบ้าลูกปืนหลุด รถเข็น Corr Roll",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "คลังม้วน",
+        "dateAssigned":  "12/8/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "12/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "12/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ลูกปืนแกนเพลาหลุด รถเข็นม้วนเครื่องกรอ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "12/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "12/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "12/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "สายพานราง Y-CPD-003 แตก",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "13/8/2026",
+        "dept":  "BHS",
+        "dateDone":  "13/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "13/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัวประคอง Roller โยกหลุด Support roll ราง Conveyer 2-3",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "13/8/2026",
+        "dept":  "Baler",
+        "dateDone":  "13/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "13/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เต้ารับแตกชำรุด ปลั๊กพ่วงเบเลอร์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "14/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "14/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "14/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟแสงสว่างที่อู่  MA ไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "14/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "14/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "14/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ลูกปืน Roller รางประคองแตก ราง Roller ท้ายราง BHS Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "ISOWA",
+        "dateAssigned":  "14/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "14/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "14/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Roller ท้ายราง Isowa Roller รางหาย ไม่ครบ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "14/8/2026",
+        "dept":  "Packing",
+        "dateDone":  "14/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "14/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Roller ท้ายราง BHS ขาราง Roller รางประคองหัก",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "15/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "15/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "15/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งไฟแสงสว่่าง สปอร์ตไลท์ลานจอดรถ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "15/8/2026",
+        "dept":  "FG",
+        "dateDone":  "15/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "15/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลูกปืืน Roller รางวางแบต",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "16/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "16/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "16/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "น็อตยึึดเพลทตั้งสายพานน็อตขาด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "17/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "17/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "17/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้ง โฟโต้สวิตช์ ไฟแสงสว่างลานจอดรถ LTS ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "18/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "18/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "18/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "สายปลั๊กไฟเสียบชำรุด ปลั๊กคอลโทรล BHS",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "18/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "18/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คเมนไฟให้ IT จะติดตั้งเครื่องเจน จุดเมนเครื่องเจนเก่า",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "รถกระเช้า",
+        "dateAssigned":  "18/8/2026",
+        "dept":  "รถกระเช้า",
+        "dateDone":  "18/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขน้ำมันHYD รั่ว สายหลุดจากราง น้ำมันHYD ในถังพักเหลือน้อย",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "18/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "18/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนกรองระบายอากาศ ปั้มส่งกาว Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "19/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "19/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "19/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนหลอดไฟห้องบอยเลอร์ 1,2",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "19/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "19/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "PM Plan",
+        "dateDue":  "19/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลูกปืนสลักข้าง ตามแผนงาน รถ LTS-01",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "20/8/2026",
+        "dept":  "AIR",
+        "dateDone":  "20/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "20/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เป่าฝุ่นคอยล์ร้อน Air ห้องไฟ Yueli,Isowa",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "คลังม้วน",
+        "dateAssigned":  "20/8/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "20/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "20/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หัว Millroll ใส่แหวนจักยืมไปใช้ ใส่แหวนจักรคืน เครื่องกรอ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "20/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "20/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "20/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ใส่่ชุดสลักข้างคานท้ายที่ถอดออกมาจากรถ LTS-01 ไว้เป็นสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "21/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "21/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "PM Plan",
+        "dateDue":  "21/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลูกปืนสลักข้าง คานท้าย รถ LTS-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "21/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "21/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "PM Plan",
+        "dateDue":  "21/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลูกปืนสลักข้าง คานท้าย รถ LTS-03",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "22/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "22/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "22/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "รถ BL-EL-02 เดินหน้้าถอยหลังไม่ได้",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "22/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "22/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "PM Plan",
+        "dateDue":  "22/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนปั้มส่งกาว Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "23/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "23/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "23/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Converyer ราง5 รางตีนตะขาบหย่อน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "23/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "23/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "23/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Converyer ราง5 น็อตยึดเพลทขาด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "23/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "23/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "23/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แผ่นกั้นน้ำไม่อยู่ พื้นถังกาว Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "23/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "23/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "23/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "วาล์วเดรนกาวตรง Sensor วัดระดับกาวหลุด ลอน C BHS",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BALER",
+        "dateAssigned":  "23/8/2026",
+        "dept":  "Baler",
+        "dateDone":  "23/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "23/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ลูกกลิ่งประคองลวดสึก เครื่องอัดเศษไซโล",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "24/8/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "24/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "24/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งไฟแสงสว่่าง ทางเดินรถโฟล์คลิฟท์ จั้มเมนไฟ คลังม้วน",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "24/8/2026",
+        "dept":  "Forklift",
+        "dateDone":  "24/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "24/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "พัดมลมเป่าคนน็อตจับหลุด รถ LTS-06",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "25/8/2026",
+        "dept":  "AIR",
+        "dateDone":  "25/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "25/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แอร์มีน้ำหยด ห้อง QC",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "25/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "25/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "25/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้งไฟแสงสว่่าง ทางเดินรถโฟล์คลิฟท์ จั้มเมนไฟ คลังม้วน",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "25/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "25/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "25/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัวประคองม้วน M1 ฝั่ง B สาย HYD กระบอกตัวประคองม้วนแตก",
+        "priority":  "สูง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องมาด้วยใจ  หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หน้าห้องจัดซื้อโถงทางเดิน  หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หน้้าห้อง HR  หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องน้ำชาย  หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หลอดไฟไม่ติด 1หลอด Office พีพรอมท์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "26/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนอะไหล่ ถอดมาจา ปั้มส่ง Single Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "26/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "26/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "26/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็คชุดโครงสร้างตัวประคองพบรอยเชื่อมแตก ตัวประคองม้วน M2 ฝั่ง B ขวา",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "27/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "27/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "27/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟกระพริบ ส่งเครมมา โคมไฟถนนข้างคลังเต็ม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "27/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "29/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Conveyor ขาเข้า M3 Yueli รางตีนตะขาบมีเสียงดัง ตอนวาง 2ม้วน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "27/8/2026",
+        "dept":  "FG",
+        "dateDone":  "21/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "15/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็ค ติดตามชุดปะกับเสา พบน็อตหลุด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "28/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "28/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "28/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัดเหล็กกลึงเพลา ไว้รอเปลี่ยน ราง Conveyor ขาเข้า M3 Yueli ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "28/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "28/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "28/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องพระ   หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "28/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "28/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "28/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ศาลพระภูมิ หลอดไฟไม่ติด 1หลอด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "28/8/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "28/8/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "28/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ร้านค้าคนไทย ติดตั้งปลั๊กไฟเพิ่ม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "29/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "29/8/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "29/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนปั้มส่งกาว Single Yueli ถังพัก 6 ถัง ตามแผน 1ปี",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "29/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "29/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "29/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนเพลาและแผ่นเพลทชุดเฟืองขับ  ราง Conveyor ขาเข้า M3 Yueli",
+        "priority":  "สูง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "30/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "30/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำ Support แขนรับตัวประคอง ชุดโครงสร้างตัวประคองม้วน M1 ฝั่ั่ง A,B ซ้าย ขวา 4 ชุด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "30/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "30/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำ Support แขนรับตัวประคอง ชุดโครงสร้างตัวประคองม้วน M4 ฝั่ั่ง A ซ้าย ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "30/8/2026",
+        "dept":  "YUELI",
+        "dateDone":  "30/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำ Support แขนรับตัวประคอง ชุดโครงสร้างตัวประคองม้วน M5 ฝั่ั่ง B ซ้าย ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "31/8/2026",
+        "dept":  "Glue",
+        "dateDone":  "31/8/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "31/8/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนอะไหล่่ปั้มกาวถอดมาจาก ถ้งส่ง Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "1/9/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "1/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "1/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่นนหลอดไฟโถงทางเดินประชาสัมพันธ์",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "1/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "1/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "1/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตรวจเช็คอะไหล่่ปั้มกาวถอดมาจาก ถ้งส่ง Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "พีพรอมท์",
+        "dateAssigned":  "2/9/2026",
+        "dept":  "นอกสถานที่",
+        "dateDone":  "2/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ปั้มน้ำตัดต่อบ่อย พีพรอมท์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "2/9/2026",
+        "dept":  "FG",
+        "dateDone":  "2/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แผ่่นหลังคาแตก รถ LTS-06",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "3/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "3/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนตะแกรงช้องตัวประคองม้วน ตัวประคองม้วน M1 A ขวา",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "3/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "3/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนตะแกรงช้องตัวประคองม้วน ตัวประคองม้วน M2 A ซ้าย",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "4/9/2026",
+        "dept":  "FG",
+        "dateDone":  "4/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "4/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ซ่อมกระบอกคว่ำหงายไว้เป็นสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "4/9/2026",
+        "dept":  "FG",
+        "dateDone":  "4/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "4/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ซ่่อมชุดคานท้ายไว้สแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "4/9/2026",
+        "dept":  "FG",
+        "dateDone":  "13/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "14/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้อรถเข็นแบตเอียง",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "4/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "4/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "4/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ยึดท่อสายไฟกำแพงหน้างโรงงาน",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "5/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "5/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "5/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ถอดเช็คปั้มกาว เปลี่ยนอะไหล่ไว้เป็นสแปร์ ตัวที่ถอดจาก BHS Double",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "5/9/2026",
+        "dept":  "FG",
+        "dateDone":  "5/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "5/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขรางแบต RM ไม่ได้ระดับ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "7/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "7/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "7/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขเพลทตั้งราง Conveyou รูยึดไม่ตรงเสื้อลูกปืน ราง Conveyor ขาเข้า Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "7/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "กลึงเพลาขับ ไว้เป็นสแปร์ ราง Conveyor ขาเข้า Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "8/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "8/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "8/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air ห้องไฟ ISOWA No.1",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "8/9/2026",
+        "dept":  "FG",
+        "dateDone":  "8/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ประกอบมอเตอร์์ขับปั้ม HYD  รถโฟล์คลิฟท์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "8/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "8/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องเซฟเวอร์ แอณืไม่เย็น",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "9/9/2026",
+        "dept":  "FG",
+        "dateDone":  "9/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "Testมอเตอร์ขับปั้ม HYD ไว้สแปร์ รถโฟล์คลิฟท์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "9/9/2026",
+        "dept":  "FG",
+        "dateDone":  "9/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "Test ปั้ม Hyd  รถโฟล์คลิฟท์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "9/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "9/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "9/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air ห้องไฟ ISOWA No.2",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "10/9/2026",
+        "dept":  "FG",
+        "dateDone":  "10/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "10/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เบาะรถขาด รถ LTS-07",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "10/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "10/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตัวกั้นม้วน กระบอกมีลมย้อน M5 Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "10/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "10/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "PM Plan",
+        "dateDue":  "10/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air ห้องไฟ ISOWA No.3",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "11/9/2026",
+        "dept":  "FG",
+        "dateDone":  "11/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "11/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "Test คานท้ายรถโฟล์คลิฟท์ ชุดฝาปิดสลัก",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "11/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "11/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "11/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนโฟโต้สวิตช์  ไฟแสงสว่าง BHS Yueli",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "11/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "11/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "11/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air บอยเลอร์ 3",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "11/9/2026",
+        "dept":  "FG",
+        "dateDone":  "",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "11/9/2026",
+        "status":  "กำลังดำเนินการ",
+        "note":  null,
+        "detail":  "ล้อใช้งานไม่ได้ รถแฮนลิฟท์ FG",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "12/9/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "12/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "12/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องน้ำหญิิงชั้น 1 หลอดไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Office",
+        "dateAssigned":  "12/9/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "12/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "12/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องทำำงานเป็นทีม หลอดไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "13/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "13/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "13/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คแก้ไขจุดลมรั่วรับม้วน M3",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "13/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "13/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "13/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คแก้ไขจุดลมรั่วรับม้วน M4",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "บ่อบำบัด",
+        "dateAssigned":  "14/9/2026",
+        "dept":  "ระบบบำบัดน้ำเสีย",
+        "dateDone":  "14/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "14/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เสียงสัญญาณไม่ติด  บ่อบำบัด น้ำเสีย",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "14/9/2026",
+        "dept":  "อื่นๆ",
+        "dateDone":  "14/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "14/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ชั้นวางคาน รถโฟล์คลิฟท์ ทำชั้นวาง ที่อู่",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "14/9/2026",
+        "dept":  "อื่นๆ",
+        "dateDone":  "14/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "14/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ทำชั้นวางสาย HYD ทำชั้ั้นวางสาย HYD",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "15/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "15/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "15/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟศาลพระภูมิ ไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "15/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "16/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้ง Regulertor ปั้มกาว ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "16/9/2026",
+        "dept":  "ไฟฟ้า Office",
+        "dateDone":  "16/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "16/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟไม่ติดห้องคลังม้วน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "17/9/2026",
+        "dept":  "BHS",
+        "dateDone":  "17/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "17/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ช่วยงาน MC เปลี่ยนมีด HQ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "BHS",
+        "dateAssigned":  "17/9/2026",
+        "dept":  "BHS",
+        "dateDone":  "17/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "17/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ช่วยงาน MC ถอดเช็คเพลาและชุดเกียร์ขับสายพานเส้นล่าง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "18/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "18/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง Conveyor ราง 5 ขาออก ตัดต่อโซ่มอเตอร์ขับรางตีนตะขาย",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "18/9/2026",
+        "dept":  "FG",
+        "dateDone":  "18/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "18/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "รถเข็นแบต ห้องแบต ตัดเชื่อมราง และล้อเข็นแบต",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "19/9/2026",
+        "dept":  "FG",
+        "dateDone":  "19/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "19/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ถอยหลังไม่มีสัญญาณเสียและไฟถอย รถ LTS-01",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "21/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "22/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "22/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ติดตั้ง Regulertor ปั้มกาว Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "21/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "21/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "21/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟไม่ติด m5 Yueli",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "21/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "21/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "21/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟไม่ติด จุดวางม้วนใกล้เครื่องกร",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "21/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "21/9/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "21/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ใส่หน้าแป้นปั้มกาว ตัสสแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "22/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "22/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair CMMS",
+        "dateDue":  "22/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟไม่ติด โคมไฟจุุดวางม้วนคลังเต็ม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "23/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "23/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "PM Plan",
+        "dateDue":  "23/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air  ห้องบอรฃยเลอร์ 1,2 No.1",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "23/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "23/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "PM Plan",
+        "dateDue":  "23/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air  ห้องบอรฃยเลอร์ 1,2 No.2",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "23/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "23/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "23/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "กรบอกลมตัวกั้นม้วน m5 Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "24/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "24/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "24/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ประกอบปั้มกาว  ปั้มกาว สแปร์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "บ่อบำบัด",
+        "dateAssigned":  "24/9/2026",
+        "dept":  "ระบบบำบัดน้ำเสีย",
+        "dateDone":  "25/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "25/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขวงจรควบคุม ปั้มไดโว่ ปั้มไดโว่่",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "25/9/2026",
+        "dept":  "Forklift",
+        "dateDone":  "25/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "25/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่่ยนลูกปืนชุดล็อรถเข็นแบต",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "26/9/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "26/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "26/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนไฟสปอร์สไลท์ส่องเครื่องอัดแผ่นไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "26/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "26/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "26/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนซีลกระบอกHYD  ตัวยกม้วน M4 B ขวา",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "26/9/2026",
+        "dept":  "YUELI",
+        "dateDone":  "26/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "26/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ตะแกรงปิดช่องหลุด ตัวยกม้้วน M5 A ซ้าย",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "28/9/2026",
+        "dept":  "คลังม้วน",
+        "dateDone":  "28/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "28/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยน จอมิเตอร์ตู้ชาร์จแบต RM",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "28/9/2026",
+        "dept":  "Glue",
+        "dateDone":  "28/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "28/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  " แก้ไขน็อตยึดฐาน มอเตอร์บอแรกซ์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "28/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "8/10/2026",
+        "assignee":  "วาทิต",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ห้องคอลโทรลไฟฟ้า Office น้ำยาแอร์รั่ว",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "28/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "",
+        "assignee":  "วาทิต",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "กำลังดำเนินการ",
+        "note":  null,
+        "detail":  "ห้องชอบพัฒนา NO.2 น้ำยาแอร์รั่ว",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "29/9/2026",
+        "dept":  "Forklift",
+        "dateDone":  "29/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "29/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "แก้ไขโครงพัดลมโยก ทำ Support ค้ำใหม่ รถ LTS-02,04,05,06,07  ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "29/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "29/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "PM Plan",
+        "dateDue":  "29/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air ห้อง Facility (พี่ตุ๊)",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "FG",
+        "dateAssigned":  "29/9/2026",
+        "dept":  "FG",
+        "dateDone":  "29/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "29/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนลู้อแฮนลิฟท์",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "SOLAR",
+        "dateAssigned":  "29/9/2026",
+        "dept":  "Solar cell",
+        "dateDone":  "",
+        "assignee":  "วาทิต",
+        "jobType":  "Repair",
+        "dateDue":  "5/10/2026",
+        "status":  "กำลังดำเนินการ",
+        "note":  null,
+        "detail":  "เช็คตัวรับส่งสัญญาณข้อมูล SMA Inverter Manager",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "Forklift",
+        "dateDone":  "30/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "รถ LTS-06 ลูกปืืนสลักข้างแตก   ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "AIR",
+        "dateDone":  "30/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "PM Plan",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air ห้องตัดตัวอย่าง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "SOLAR",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "Solar cell",
+        "dateDone":  "30/9/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "สายการ์วชุดตัวรับส่งสัญญาน หลุด  SMA Inverter Manager",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "SOLAR",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "Solar cell",
+        "dateDone":  "30/9/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คสาย Link อินเวอร์เตอร์  ดูข้อมูลไม่ได้ อินเวอร์เตอร์ Solar",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "Forklift",
+        "dateDone":  "30/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หัวอัดจารบีชุดข้อต่อสลักข้างหัก หาย รถLTS-04",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "30/9/2026",
+        "dept":  "Forklift",
+        "dateDone":  "30/9/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "30/9/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หัวอัดจารบีชุดข้อต่อสลักข้างหัก หาย รถLTS-06",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "1/10/2026",
+        "dept":  "AIR",
+        "dateDone":  "1/10/2026",
+        "assignee":  "ปิยะ",
+        "jobType":  "Repair",
+        "dateDue":  "1/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ล้าง Air  ห้องจัดส่ง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "1/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "1/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "1/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "มีน้ำมัน HYD รั่วซึมชุดคานท้าย  เปลี่ยนชุดกระบอกบังคับเลี้ยว รถ LTS-05",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "2/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "2/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หัวอัดจารบีชุดข้อต่อสลักข้างหัก หาย รถ BL-EL-01",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "2/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "2/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "2/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "หัวอัดจารบีชุดข้อต่อสลักข้างหัก หาย รถ BL-EL-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "ISOWA",
+        "dateAssigned":  "3/10/2026",
+        "dept":  "ISOWA",
+        "dateDone":  "13/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เช็คร้อยขาดท่อ Trim พันฟิมล์ยึดใหม่ให้แน่น  ISOWA   แก้ไขท่อ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "3/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "3/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "น้ำมันรั่วซึมชุดคานท้าย รถ LTS-05",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "3/10/2026",
+        "dept":  "Glue",
+        "dateDone":  "3/10/2026",
+        "assignee":  "ธนัตถ์",
+        "jobType":  "Repair",
+        "dateDue":  "3/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ท่อกาว รั่ว ตัดท่อ ต๊าปเกลียวไว้รอใส่ท่อส่งกาว Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "3/10/2026",
+        "dept":  "Glue",
+        "dateDone":  "3/10/2026",
+        "assignee":  "มนชัยต์",
+        "jobType":  "Repair",
+        "dateDue":  "3/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ปั้มทำงานผิดปกติ ถอดเปลี่ยนปั้ม",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "5/10/2026",
+        "dept":  "Glue",
+        "dateDone":  "5/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "5/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เปลี่ยนท่่อกาว ท่อส่งกาว Double Yueli ",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "6/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "6/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "6/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ รถLTS-06",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "7/10/2026",
+        "dept":  "AIR",
+        "dateDone":  "7/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "7/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เป่าฝุ่นคอยล์ร้อนตามแผนงาน คอยล์ร้อน Air ห้องไฟ Yueli",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "7/10/2026",
+        "dept":  "AIR",
+        "dateDone":  "7/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "7/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "เป่าฝุ่นคอยล์ร้อนตามแผนงาน คอยล์ร้อน Air ห้องไฟ ISOWA",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "YUELI",
+        "dateAssigned":  "8/10/2026",
+        "dept":  "YUELI",
+        "dateDone":  "8/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ใส่่น็อตยึดแผ่น Slopr ram ที่วางม้วน  M3",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "8/10/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "8/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "8/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ไฟไม่ติด ไฟไม่ติด",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "9/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "9/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ รถLTS-05",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "9/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "9/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ รถLTS-04",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "9/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "9/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ รถLTS-01",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "9/10/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "9/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟ ไม่ติด คลังเต็ม",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Factory",
+        "dateAssigned":  "9/10/2026",
+        "dept":  "ไฟฟ้าอาคาร",
+        "dateDone":  "9/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "9/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "โคมไฟ ไม่ติด ลานโหลด จัดส่ง",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "10/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "10/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ  รถ LTS-02",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "10/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "10/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ  รถ LTS-03",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Forklift",
+        "dateAssigned":  "10/10/2026",
+        "dept":  "Forklift",
+        "dateDone":  "10/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ย้ายพัดลมระบายความร้อน  คนขับ  รถ LTS-07",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "AIR",
+        "dateAssigned":  "10/10/2026",
+        "dept":  "AIR",
+        "dateDone":  "10/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "10/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "น้ำแอร์หยด  ห้องตีบิล ",
+        "priority":  "กลาง",
+        "techType":  "EL/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "11/10/2026",
+        "dept":  "Glue",
+        "dateDone":  "11/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "11/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "วาล์วก่อนเข้าปั้มส่ง  วาล์วปิดไม่อยู่ Double Yueli",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "Packing",
+        "dateAssigned":  "11/10/2026",
+        "dept":  "Packing",
+        "dateDone":  "11/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "11/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ราง  B-UP-02 Roll เพลาสึก",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    },
+    {
+        "machine":  "GULE",
+        "dateAssigned":  "11/10/2026",
+        "dept":  "Glue",
+        "dateDone":  "11/10/2026",
+        "assignee":  "วีระศักดิ์",
+        "jobType":  "Repair",
+        "dateDue":  "11/10/2026",
+        "status":  "เสร็จแล้ว",
+        "note":  null,
+        "detail":  "ถังกาวถังส่ง Doubli Yueli ท่อตัน",
+        "priority":  "กลาง",
+        "techType":  "MC/GL"
+    }
+];
+
+    // ตัวแปรส่วนกลางของระบบ
+    let allData = [];
+    let currentFilteredData = [];
+    let currentPage = 1;
+    let pageSize = 25;
+    let currentSortColumn = 'index';
+    let currentSortAsc = false; // default newest first
+    let activeQuickPill = 'all';
+
+    // Chart.js Instances
+    let chartMachine = null;
+    let chartTechnician = null;
+    let chartJobType = null;
+    let chartTechType = null;
+    let chartPriority = null;
+
+    let debounceTimer = null;
+    let modalInstance = null;
+
+    // เริ่มการทำงานเมื่อโหลดหน้า
+    window.addEventListener('DOMContentLoaded', () => {
+        if (typeof ChartDataLabels !== 'undefined') {
+            Chart.register(ChartDataLabels);
+        }
+        initTheme();
+        initData();
+        modalInstance = new bootstrap.Modal(document.getElementById('workOrderDetailModal'));
+        
+        // Auto-sync live data from Google Sheets in background
+        syncGoogleSheets();
+    });
+
+    function initTheme() {
+        const savedTheme = localStorage.getItem('dashboard_theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', newTheme);
+        localStorage.setItem('dashboard_theme', newTheme);
+        updateThemeIcon(newTheme);
+        updateCharts(currentFilteredData);
+    }
+
+    function updateThemeIcon(theme) {
+        const btn = document.getElementById('themeToggleBtn');
+        if (!btn) return;
+        btn.innerHTML = theme === 'dark' ? '<i class="fa-solid fa-sun text-warning"></i>' : '<i class="fa-solid fa-moon"></i>';
+    }
+
+    function initData() {
+        // โหลดข้อมูลเริ่มต้นที่ฝังไว้ในไฟล์
+        allData = EMBEDDED_INITIAL_DATA.map((item, idx) => ({
+            index: idx + 1,
+            dateAssigned: item.dateAssigned || '',
+            dateDue: item.dateDue || '',
+            dateDone: item.dateDone || '',
+            detail: item.detail || '',
+            machine: item.machine || '',
+            dept: item.dept || '',
+            assignee: item.assignee || '',
+            techType: item.techType || '',
+            jobType: item.jobType || '',
+            priority: item.priority || 'กลาง',
+            status: item.status || 'เสร็จแล้ว',
+            note: item.note || '-'
+        }));
+
+        populateDropdowns();
+        updateQuickPillsCounters();
+        applyFilters();
+
+        const syncTime = document.getElementById('syncTimeText');
+        if (syncTime) syncTime.textContent = `| ข้อมูลในเครื่อง: พร้อมใช้งาน (${allData.length} รายการ)`;
+    }
+
+    // Google Sheets GViz JSONP Handler
+    window.handleGoogleSheetResponse = function(response) {
+        try {
+            if (!response || !response.table || !response.table.rows) {
+                throw new Error('Invalid structure');
+            }
+            const rows = response.table.rows;
+            const parsed = [];
+
+            const parseCell = (cell) => {
+                if (!cell) return '';
+                if (cell.f !== undefined && cell.f !== null) return String(cell.f).trim();
+                if (cell.v !== undefined && cell.v !== null) {
+                    if (typeof cell.v === 'string' && cell.v.startsWith('Date(')) {
+                        const m = cell.v.match(/Date\((\d+),(\d+),(\d+)\)/);
+                        if (m) {
+                            const y = m[1];
+                            const month = parseInt(m[2], 10) + 1;
+                            const d = m[3];
+                            return `${d}/${month}/${y}`;
+                        }
+                    }
+                    return String(cell.v).trim();
+                }
+                return '';
+            };
+
+            rows.forEach((r, idx) => {
+                if (!r || !r.c) return;
+                const dateAssigned = parseCell(r.c[0]);
+                const dateDue = parseCell(r.c[1]);
+                const dateDone = parseCell(r.c[2]);
+                const detail = parseCell(r.c[3]);
+                const machine = parseCell(r.c[4]);
+                const dept = parseCell(r.c[5]);
+                const assignee = parseCell(r.c[6]);
+                const techType = parseCell(r.c[7]);
+                const jobType = parseCell(r.c[8]);
+                const priority = parseCell(r.c[9]) || 'กลาง';
+                const status = parseCell(r.c[10]) || 'เสร็จแล้ว';
+                const note = parseCell(r.c[11]) || '-';
+
+                if (dateAssigned || detail || machine) {
+                    parsed.push({
+                        index: parsed.length + 1,
+                        dateAssigned,
+                        dateDue,
+                        dateDone,
+                        detail,
+                        machine,
+                        dept,
+                        assignee,
+                        techType,
+                        jobType,
+                        priority,
+                        status,
+                        note
+                    });
+                }
+            });
+
+            if (parsed.length > 0) {
+                allData = parsed;
+                populateDropdowns();
+                updateQuickPillsCounters();
+                applyFilters();
+
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                const badge = document.getElementById('syncStatusBadge');
+                if (badge) {
+                    badge.className = 'badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1';
+                    badge.innerHTML = '<span class="live-pulse me-1"></span> เชื่อมต่อ Google Sheets สด';
+                }
+                const syncTime = document.getElementById('syncTimeText');
+                if (syncTime) {
+                    syncTime.textContent = `| ซิงค์สดล่าสุด: วันนี้ ${timeStr} น. (${allData.length} รายการ)`;
+                }
+            }
+        } catch (err) {
+            console.warn('Error parsing Google Sheets data:', err);
+        }
+    };
+
+    function syncGoogleSheets() {
+        const refreshBtn = document.getElementById('btnRefresh');
+        const icon = refreshBtn ? refreshBtn.querySelector('i') : null;
+        if (icon) icon.classList.add('fa-spin');
+
+        const badge = document.getElementById('syncStatusBadge');
+        if (badge) {
+            badge.className = 'badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-1';
+            badge.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> กำลังดึงข้อมูล...';
+        }
+
+        // Script Tag Injection for JSONP (bypasses CORS restrictions)
+        const oldScript = document.getElementById('gviz-sync-script');
+        if (oldScript) oldScript.remove();
+
+        const script = document.createElement('script');
+        script.id = 'gviz-sync-script';
+        script.src = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=responseHandler:handleGoogleSheetResponse&gid=${GOOGLE_SHEET_GID}&_t=${Date.now()}`;
+        
+        script.onerror = function() {
+            if (badge) {
+                badge.className = 'badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1';
+                badge.innerHTML = '<span class="offline-dot me-1"></span> ใช้ข้อมูลในเครื่อง (Offline)';
+            }
+            if (icon) icon.classList.remove('fa-spin');
+        };
+
+        document.body.appendChild(script);
+
+        setTimeout(() => {
+            if (icon) icon.classList.remove('fa-spin');
+        }, 1500);
+    }
+
+    // Helper: แปลง 'dd/mm/yyyy' หรือ 'd/m/yyyy' เป็น 'yyyy-mm-dd' เพื่อเปรียบเทียบกับ input type="date"
+    function parseDateToISO(str) {
+        if (!str) return null;
+        const parts = str.trim().split(/[\/\-]/);
+        if (parts.length === 3) {
+            let day = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10);
+            let year = parseInt(parts[2], 10);
+            if (year > 2500) year -= 543; // พ.ศ. -> ค.ศ.
+            if (year < 100) year += 2000;
+            const mm = String(month).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            return `${year}-${mm}-${dd}`;
+        }
+        return null;
+    }
+
+    function populateDropdowns() {
+        const getUnique = (key) => [...new Set(allData.map(d => d[key]).filter(Boolean))].sort();
+
+        fillSelect('filterMachine', getUnique('machine'));
+        fillSelect('filterDept', getUnique('dept'));
+        fillSelect('filterAssignee', getUnique('assignee'));
+        fillSelect('filterTechType', getUnique('techType'));
+        fillSelect('filterJobType', getUnique('jobType'));
+        fillSelect('filterPriority', getUnique('priority'));
+        fillSelect('filterStatus', getUnique('status'));
+    }
+
+    function fillSelect(id, list) {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">-- ทั้งหมด --</option>';
+        list.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            sel.appendChild(opt);
+        });
+        if (currentVal) sel.value = currentVal;
+    }
+
+    function updateQuickPillsCounters() {
+        const total = allData.length;
+        const completed = allData.filter(d => d.status.includes('เสร็จแล้ว')).length;
+        const pending = total - completed;
+        const el = allData.filter(d => (d.techType || '').toUpperCase().includes('EL')).length;
+        const mc = allData.filter(d => (d.techType || '').toUpperCase().includes('MC')).length;
+        const repair = allData.filter(d => (d.jobType || '').toLowerCase().includes('repair')).length;
+        const pm = allData.filter(d => (d.jobType || '').toLowerCase().includes('pm')).length;
+
+        document.getElementById('pillCountAll').textContent = total;
+        document.getElementById('pillCountCompleted').textContent = completed;
+        document.getElementById('pillCountPending').textContent = pending;
+        document.getElementById('pillCountEL').textContent = el;
+        document.getElementById('pillCountMC').textContent = mc;
+        document.getElementById('pillCountRepair').textContent = repair;
+        document.getElementById('pillCountPM').textContent = pm;
+    }
+
+    function applyQuickPill(type) {
+        activeQuickPill = type;
+        document.querySelectorAll('#quickPillsContainer .filter-pill-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-pill') === type);
+        });
+        applyFilters();
+    }
+
+    function debounceFilter() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            filterData();
+        }, 250);
+    }
+
+    function clearSearch() {
+        document.getElementById('filterSearch').value = '';
+        filterData();
+    }
+
+    function resetFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterStartDate').value = '';
+        document.getElementById('filterEndDate').value = '';
+        document.getElementById('filterMachine').value = '';
+        document.getElementById('filterDept').value = '';
+        document.getElementById('filterAssignee').value = '';
+        document.getElementById('filterTechType').value = '';
+        document.getElementById('filterJobType').value = '';
+        document.getElementById('filterPriority').value = '';
+        document.getElementById('filterStatus').value = '';
+        activeQuickPill = 'all';
+        document.querySelectorAll('#quickPillsContainer .filter-pill-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-pill') === 'all');
+        });
+        applyFilters();
+    }
+
+    function filterData() {
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const search = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+        const startDate = document.getElementById('filterStartDate')?.value || '';
+        const endDate = document.getElementById('filterEndDate')?.value || '';
+        const selMachine = document.getElementById('filterMachine')?.value || '';
+        const selDept = document.getElementById('filterDept')?.value || '';
+        const selAssignee = document.getElementById('filterAssignee')?.value || '';
+        const selTech = document.getElementById('filterTechType')?.value || '';
+        const selJob = document.getElementById('filterJobType')?.value || '';
+        const selPriority = document.getElementById('filterPriority')?.value || '';
+        const selStatus = document.getElementById('filterStatus')?.value || '';
+
+        let activeCount = 0;
+        if (search) activeCount++;
+        if (startDate || endDate) activeCount++;
+        if (selMachine) activeCount++;
+        if (selDept) activeCount++;
+        if (selAssignee) activeCount++;
+        if (selTech) activeCount++;
+        if (selJob) activeCount++;
+        if (selPriority) activeCount++;
+        if (selStatus) activeCount++;
+        if (activeQuickPill !== 'all') activeCount++;
+
+        const badge = document.getElementById('activeFilterBadge');
+        if (badge) {
+            badge.textContent = activeCount > 0 ? `ใช้งาน ${activeCount} ตัวกรอง` : 'ทั้งหมด';
+            badge.className = activeCount > 0 ? 'badge bg-primary rounded-pill ms-2' : 'badge bg-secondary-subtle text-secondary rounded-pill ms-2';
+        }
+
+        currentFilteredData = allData.filter(item => {
+            // Quick Pill condition
+            if (activeQuickPill === 'completed' && !item.status.includes('เสร็จแล้ว')) return false;
+            if (activeQuickPill === 'pending' && item.status.includes('เสร็จแล้ว')) return false;
+            if (activeQuickPill === 'el' && !item.techType.toUpperCase().includes('EL')) return false;
+            if (activeQuickPill === 'mc' && !item.techType.toUpperCase().includes('MC')) return false;
+            if (activeQuickPill === 'repair' && !item.jobType.toLowerCase().includes('repair')) return false;
+            if (activeQuickPill === 'pm' && !item.jobType.toLowerCase().includes('pm')) return false;
+
+            // Date Range
+            const itemIso = parseDateToISO(item.dateAssigned);
+            if (startDate && itemIso && itemIso < startDate) return false;
+            if (endDate && itemIso && itemIso > endDate) return false;
+
+            // Dropdowns
+            if (selMachine && item.machine !== selMachine) return false;
+            if (selDept && item.dept !== selDept) return false;
+            if (selAssignee && item.assignee !== selAssignee) return false;
+            if (selTech && item.techType !== selTech) return false;
+            if (selJob && item.jobType !== selJob) return false;
+            if (selPriority && item.priority !== selPriority) return false;
+            if (selStatus && item.status !== selStatus) return false;
+
+            // Search Keyword
+            if (search) {
+                const combined = `${item.detail} ${item.machine} ${item.dept} ${item.assignee} ${item.note} ${item.techType} ${item.jobType}`.toLowerCase();
+                if (!combined.includes(search)) return false;
+            }
+
+            return true;
+        });
+
+        currentPage = 1;
+        updateDashboard(currentFilteredData);
+    }
+
+    function updateDashboard(data) {
+        updateKPIs(data);
+        updateCharts(data);
+        renderTable();
+    }
+
+    function updateKPIs(data) {
+        const total = data.length;
+        const completed = data.filter(d => d.status.includes('เสร็จแล้ว')).length;
+        const pending = total - completed;
+        const pct = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+
+        const elCount = data.filter(d => (d.techType || '').toUpperCase().includes('EL')).length;
+        const mcCount = data.filter(d => (d.techType || '').toUpperCase().includes('MC')).length;
+        const pmCount = data.filter(d => (d.jobType || '').toLowerCase().includes('pm')).length;
+        const pmPct = total > 0 ? ((pmCount / total) * 100).toFixed(1) : 0;
+        const cmmsCount = data.filter(d => (d.jobType || '').toLowerCase().includes('cmms')).length;
+        const repairCount = data.filter(d => (d.jobType || '').toLowerCase().includes('repair')).length;
+        const genRepairCount = repairCount - cmmsCount;
+
+        document.getElementById('kpiTotal').textContent = total;
+        document.getElementById('kpiElCount').textContent = elCount;
+        document.getElementById('kpiMcCount').textContent = mcCount;
+
+        document.getElementById('kpiCompleted').textContent = completed;
+        document.getElementById('kpiCompletedPct').textContent = pct + '%';
+        document.getElementById('kpiProgressBar').style.width = pct + '%';
+
+        document.getElementById('kpiPending').textContent = pending;
+        const pendingBadge = document.getElementById('kpiPendingBadge');
+        if (pending > 0) {
+            pendingBadge.className = 'badge bg-warning text-dark rounded-pill';
+            pendingBadge.textContent = `${pending} งานค้าง`;
+        } else {
+            pendingBadge.className = 'badge bg-success text-white rounded-pill';
+            pendingBadge.textContent = 'ไม่มีงานค้าง';
+        }
+
+        document.getElementById('kpiPmCount').textContent = pmCount;
+        document.getElementById('kpiPmPct').textContent = pmPct + '%';
+
+        document.getElementById('kpiRepairCount').textContent = repairCount;
+        document.getElementById('kpiCmmsCount').textContent = cmmsCount;
+        document.getElementById('kpiGeneralRepairCount').textContent = genRepairCount > 0 ? genRepairCount : 0;
+
+        document.getElementById('totalDatabaseCount').textContent = allData.length;
+        document.getElementById('filteredTotalCount').textContent = total;
+    }
+
+    function updateCharts(data) {
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const textColor = isDark ? '#cbd5e1' : '#475569';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+
+        // 1. Machine Counts (Top 10)
+        const machineCounts = {};
+        data.forEach(d => {
+            const m = d.machine || 'ไม่ระบุ';
+            machineCounts[m] = (machineCounts[m] || 0) + 1;
+        });
+        const sortedMachines = Object.entries(machineCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const mLabels = sortedMachines.map(x => x[0]);
+        const mValues = sortedMachines.map(x => x[1]);
+
+        if (chartMachine) chartMachine.destroy();
+        const mCtx = document.getElementById('machineChart').getContext('2d');
+        chartMachine = new Chart(mCtx, {
+            type: 'bar',
+            data: {
+                labels: mLabels,
+                datasets: [{
+                    label: 'จำนวนงาน (รายการ)',
+                    data: mValues,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 8,
+                    maxBarThickness: 34
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 25 }
+                },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 2,
+                        color: textColor,
+                        font: { family: 'Prompt', weight: 'bold', size: 12 },
+                        formatter: (val) => val > 0 ? val : ''
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: textColor, font: { family: 'Prompt', size: 11, weight: '500' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grace: '15%',
+                        ticks: { color: textColor, font: { family: 'Prompt', size: 11 }, precision: 0 },
+                        grid: { color: gridColor }
+                    }
+                }
+            }
+        });
+
+        // 2. Technician Workload (Stacked Completed vs Pending)
+        const assignees = [...new Set(allData.map(d => d.assignee).filter(Boolean))];
+        const techCompleted = [];
+        const techPending = [];
+        const techTotals = {};
+
+        assignees.forEach(name => {
+            const userTasks = data.filter(d => d.assignee === name);
+            const comp = userTasks.filter(d => d.status.includes('เสร็จแล้ว')).length;
+            const pend = userTasks.length - comp;
+            techCompleted.push(comp);
+            techPending.push(pend);
+            techTotals[name] = { total: userTasks.length, comp, pend };
+        });
+
+        if (chartTechnician) chartTechnician.destroy();
+        const tCtx = document.getElementById('technicianChart').getContext('2d');
+        chartTechnician = new Chart(tCtx, {
+            type: 'bar',
+            data: {
+                labels: assignees,
+                datasets: [
+                    {
+                        label: 'เสร็จแล้ว',
+                        data: techCompleted,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6,
+                        stack: 'stack1',
+                        datalabels: {
+                            anchor: 'center',
+                            align: 'center',
+                            color: '#ffffff',
+                            font: { family: 'Prompt', weight: 'bold', size: 12 },
+                            formatter: (val) => val > 0 ? val : ''
+                        }
+                    },
+                    {
+                        label: 'กำลังดำเนินการ',
+                        data: techPending,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 6,
+                        stack: 'stack1',
+                        datalabels: {
+                            anchor: 'center',
+                            align: 'center',
+                            color: '#ffffff',
+                            font: { family: 'Prompt', weight: 'bold', size: 12 },
+                            formatter: (val) => val > 0 ? val : ''
+                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 20 }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: textColor, font: { family: 'Prompt', size: 11, weight: '600' } }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        ticks: { color: textColor, font: { family: 'Prompt', size: 11, weight: '600' } },
+                        grid: { display: false }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        grace: '15%',
+                        ticks: { color: textColor, font: { family: 'Prompt', size: 11 }, precision: 0 },
+                        grid: { color: gridColor }
+                    }
+                }
+            }
+        });
+
+        // Summary pills for technicians
+        const tSum = document.getElementById('technicianSummary');
+        if (tSum) {
+            tSum.innerHTML = assignees.map(name => {
+                const info = techTotals[name] || { total: 0, comp: 0, pend: 0 };
+                return `<span class="badge bg-secondary-subtle text-body border border-subtle rounded-pill px-3 py-1 small">
+                    <strong>${name}</strong>: รวม ${info.total} งาน 
+                    (<span class="text-success">เสร็จ ${info.comp}</span>${info.pend > 0 ? `, <span class="text-warning-emphasis">ค้าง ${info.pend}</span>` : ''})
+                </span>`;
+            }).join(' ');
+        }
+
+        // 3. Job Type Breakdown
+        const jobCounts = {};
+        data.forEach(d => {
+            const j = d.jobType || 'ไม่ระบุ';
+            jobCounts[j] = (jobCounts[j] || 0) + 1;
+        });
+
+        if (chartJobType) chartJobType.destroy();
+        const jCtx = document.getElementById('jobTypeChart').getContext('2d');
+        chartJobType = new Chart(jCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(jobCounts),
+                datasets: [{
+                    data: Object.values(jobCounts),
+                    backgroundColor: ['#3b82f6', '#06b6d4', '#8b5cf6', '#f59e0b', '#ec4899'],
+                    borderWidth: 2,
+                    borderColor: isDark ? '#151d30' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: textColor, font: { family: 'Prompt', size: 11 }, boxWidth: 12 }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { family: 'Prompt', weight: 'bold', size: 11 },
+                        formatter: (val, ctx) => {
+                            if (!val || val === 0) return '';
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                            return val >= 10 ? `${val}\n(${pct}%)` : `${val}`;
+                        },
+                        textAlign: 'center'
+                    }
+                },
+                cutout: '58%'
+            }
+        });
+
+        const jSum = document.getElementById('jobTypeSummary');
+        if (jSum) {
+            const totalJ = Object.values(jobCounts).reduce((a, b) => a + b, 0);
+            jSum.innerHTML = Object.entries(jobCounts).map(([k, v]) => {
+                const pct = totalJ > 0 ? ((v / totalJ) * 100).toFixed(1) : 0;
+                return `<span class="badge bg-secondary-subtle text-body border border-subtle rounded-pill px-2 py-1 small">${k}: <strong>${v}</strong> (${pct}%)</span>`;
+            }).join(' ');
+        }
+
+        // 4. Tech Type Breakdown (EL vs MC)
+        const techCounts = {};
+        data.forEach(d => {
+            const t = d.techType || 'ไม่ระบุ';
+            techCounts[t] = (techCounts[t] || 0) + 1;
+        });
+
+        if (chartTechType) chartTechType.destroy();
+        const ttCtx = document.getElementById('techTypeChart').getContext('2d');
+        chartTechType = new Chart(ttCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(techCounts),
+                datasets: [{
+                    data: Object.values(techCounts),
+                    backgroundColor: ['#6366f1', '#0ea5e9', '#94a3b8'],
+                    borderWidth: 2,
+                    borderColor: isDark ? '#151d30' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: textColor, font: { family: 'Prompt', size: 11 }, boxWidth: 12 }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { family: 'Prompt', weight: 'bold', size: 12 },
+                        formatter: (val, ctx) => {
+                            if (!val || val === 0) return '';
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                            return `${val} งาน\n(${pct}%)`;
+                        },
+                        textAlign: 'center'
+                    }
+                },
+                cutout: '58%'
+            }
+        });
+
+        const ttSum = document.getElementById('techTypeSummary');
+        if (ttSum) {
+            const totalT = Object.values(techCounts).reduce((a, b) => a + b, 0);
+            ttSum.innerHTML = Object.entries(techCounts).map(([k, v]) => {
+                const pct = totalT > 0 ? ((v / totalT) * 100).toFixed(1) : 0;
+                const icon = k.includes('EL') ? '<i class="fa-solid fa-bolt text-warning me-1"></i>' : '<i class="fa-solid fa-gear text-info me-1"></i>';
+                return `<span class="badge bg-secondary-subtle text-body border border-subtle rounded-pill px-2 py-1 small">${icon}${k}: <strong>${v}</strong> (${pct}%)</span>`;
+            }).join(' ');
+        }
+
+        // 5. Priority Chart (Pie)
+        const prioCounts = {};
+        data.forEach(d => {
+            const p = d.priority || 'กลาง';
+            prioCounts[p] = (prioCounts[p] || 0) + 1;
+        });
+
+        if (chartPriority) chartPriority.destroy();
+        const pCtx = document.getElementById('priorityChart').getContext('2d');
+        chartPriority = new Chart(pCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(prioCounts),
+                datasets: [{
+                    data: Object.values(prioCounts),
+                    backgroundColor: ['#f59e0b', '#ef4444', '#10b981'],
+                    borderWidth: 2,
+                    borderColor: isDark ? '#151d30' : '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: textColor, font: { family: 'Prompt', size: 11 }, boxWidth: 12 }
+                    },
+                    datalabels: {
+                        color: '#ffffff',
+                        font: { family: 'Prompt', weight: 'bold', size: 11 },
+                        formatter: (val, ctx) => {
+                            if (!val || val === 0) return '';
+                            const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                            return val >= 5 ? `${val}\n(${pct}%)` : `${val}`;
+                        },
+                        textAlign: 'center'
+                    }
+                }
+            }
+        });
+
+        const pSum = document.getElementById('prioritySummary');
+        if (pSum) {
+            const totalP = Object.values(prioCounts).reduce((a, b) => a + b, 0);
+            pSum.innerHTML = Object.entries(prioCounts).map(([k, v]) => {
+                const pct = totalP > 0 ? ((v / totalP) * 100).toFixed(1) : 0;
+                let badgeClass = 'bg-secondary-subtle text-secondary border border-subtle';
+                if (k.includes('สูง')) badgeClass = 'bg-danger-subtle text-danger border border-danger-subtle';
+                if (k.includes('กลาง')) badgeClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+                if (k.includes('ต่ำ')) badgeClass = 'bg-info-subtle text-info border border-info-subtle';
+                return `<span class="badge ${badgeClass} rounded-pill px-2 py-1 small">${k}: <strong>${v}</strong> (${pct}%)</span>`;
+            }).join(' ');
+        }
+    }
+
+    // Sort Table
+    function sortTable(column) {
+        if (currentSortColumn === column) {
+            currentSortAsc = !currentSortAsc;
+        } else {
+            currentSortColumn = column;
+            currentSortAsc = true;
+        }
+
+        // Update headers visual
+        document.querySelectorAll('.custom-table thead th').forEach(th => th.classList.remove('sorted'));
+        
+        currentFilteredData.sort((a, b) => {
+            let valA = a[column];
+            let valB = b[column];
+
+            // If date column
+            if (column.startsWith('date')) {
+                valA = parseDateToISO(valA) || '';
+                valB = parseDateToISO(valB) || '';
+            }
+
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                return currentSortAsc ? valA - valB : valB - valA;
+            }
+
+            valA = (valA || '').toString();
+            valB = (valB || '').toString();
+            return currentSortAsc ? valA.localeCompare(valB, 'th') : valB.localeCompare(valA, 'th');
+        });
+
+        renderTable();
+    }
+
+    function changePageSize() {
+        const sel = document.getElementById('pageSizeSelect').value;
+        pageSize = sel === 'all' ? currentFilteredData.length : parseInt(sel, 10);
+        currentPage = 1;
+        renderTable();
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        const totalItems = currentFilteredData.length;
+        if (totalItems === 0) {
+            tbody.innerHTML = `<tr><td colspan="13" class="text-center py-5 text-muted"><i class="fa-solid fa-box-open fs-2 mb-2 d-block"></i>ไม่พบข้อมูลที่ตรงกับเงื่อนไขการค้นหา</td></tr>`;
+            document.getElementById('showingCount').textContent = '0';
+            document.getElementById('pageInfoText').textContent = 'หน้า 0 จาก 0';
+            document.getElementById('paginationContainer').innerHTML = '';
+            return;
+        }
+
+        const effectivePageSize = pageSize === 'all' ? totalItems : pageSize;
+        const totalPages = Math.ceil(totalItems / effectivePageSize);
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        const startIndex = (currentPage - 1) * effectivePageSize;
+        const endIndex = Math.min(startIndex + effectivePageSize, totalItems);
+        const pageData = currentFilteredData.slice(startIndex, endIndex);
+
+        document.getElementById('showingCount').textContent = `${startIndex + 1} - ${endIndex}`;
+        document.getElementById('pageInfoText').textContent = `หน้า ${currentPage} จาก ${totalPages} (แสดง ${pageData.length} รายการ)`;
+
+        pageData.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.onclick = (e) => {
+                openDetailModal(item);
+            };
+
+            const isCompleted = item.status.includes('เสร็จแล้ว');
+            const statusBadge = isCompleted
+                ? `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill"><i class="fa-solid fa-check me-1"></i>${item.status}</span>`
+                : `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill"><i class="fa-solid fa-spinner fa-spin me-1"></i>${item.status}</span>`;
+
+            const isEL = (item.techType || '').toUpperCase().includes('EL');
+            const techBadge = isEL
+                ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill"><i class="fa-solid fa-bolt me-1"></i>${item.techType}</span>`
+                : `<span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill"><i class="fa-solid fa-gear me-1"></i>${item.techType}</span>`;
+
+            let priorityBadge = '';
+            if (item.priority.includes('สูง')) {
+                priorityBadge = `<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">${item.priority}</span>`;
+            } else if (item.priority.includes('ต่ำ')) {
+                priorityBadge = `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">${item.priority}</span>`;
+            } else {
+                priorityBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill">${item.priority}</span>`;
+            }
+
+            tr.innerHTML = `
+                <td class="text-muted fw-semibold">${item.index}</td>
+                <td><small class="fw-semibold">${item.dateAssigned || '-'}</small></td>
+                <td><small class="text-muted">${item.dateDue || '-'}</small></td>
+                <td><small class="${item.dateDone ? 'text-success fw-bold' : 'text-muted'}">${item.dateDone || '-'}</small></td>
+                <td>
+                    <div class="fw-semibold text-truncate" style="max-width: 320px;" title="${item.detail}">
+                        ${item.detail}
+                    </div>
+                </td>
+                <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">${item.machine}</span></td>
+                <td><small class="text-muted">${item.dept}</small></td>
+                <td><strong class="text-dark-emphasis">${item.assignee}</strong></td>
+                <td>${techBadge}</td>
+                <td><small class="badge bg-light text-dark border border-subtle rounded-pill">${item.jobType}</small></td>
+                <td>${priorityBadge}</td>
+                <td>${statusBadge}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary rounded-circle py-1 px-2" title="ดูรายละเอียด" onclick="event.stopPropagation(); openDetailModal(item);">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+        const pag = document.getElementById('paginationContainer');
+        pag.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const createLi = (label, targetPage, disabled = false, active = false) => {
+            const li = document.createElement('li');
+            li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.href = 'javascript:void(0)';
+            a.innerHTML = label;
+            if (!disabled && !active) {
+                a.onclick = () => {
+                    currentPage = targetPage;
+                    renderTable();
+                    document.querySelector('.table-responsive-custom').scrollTop = 0;
+                };
+            }
+            li.appendChild(a);
+            return li;
+        };
+
+        // First & Prev
+        pag.appendChild(createLi('<i class="fa-solid fa-angles-left"></i>', 1, currentPage === 1));
+        pag.appendChild(createLi('<i class="fa-solid fa-angle-left"></i>', currentPage - 1, currentPage === 1));
+
+        // Page Numbers Window
+        const delta = 2;
+        const range = [];
+        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+            range.push(i);
+        }
+
+        if (currentPage - delta > 2) {
+            pag.appendChild(createLi('1', 1, false, currentPage === 1));
+            pag.appendChild(createLi('...', 0, true));
+        } else {
+            pag.appendChild(createLi('1', 1, false, currentPage === 1));
+        }
+
+        range.forEach(p => {
+            pag.appendChild(createLi(p, p, false, currentPage === p));
+        });
+
+        if (currentPage + delta < totalPages - 1) {
+            pag.appendChild(createLi('...', 0, true));
+            pag.appendChild(createLi(totalPages, totalPages, false, currentPage === totalPages));
+        } else if (totalPages > 1) {
+            pag.appendChild(createLi(totalPages, totalPages, false, currentPage === totalPages));
+        }
+
+        // Next & Last
+        pag.appendChild(createLi('<i class="fa-solid fa-angle-right"></i>', currentPage + 1, currentPage === totalPages));
+        pag.appendChild(createLi('<i class="fa-solid fa-angles-right"></i>', totalPages, currentPage === totalPages));
+    }
+
+    function openDetailModal(item) {
+        document.getElementById('modalSubTitle').textContent = `รหัสลำดับงาน: #${item.index} | วันที่มอบหมาย: ${item.dateAssigned}`;
+        document.getElementById('modalDetail').textContent = item.detail;
+        document.getElementById('modalDateAssigned').textContent = item.dateAssigned || '-';
+        document.getElementById('modalDateDue').textContent = item.dateDue || '-';
+        document.getElementById('modalDateDone').textContent = item.dateDone || '-';
+        document.getElementById('modalMachine').textContent = item.machine || '-';
+        document.getElementById('modalDept').textContent = item.dept || '-';
+        document.getElementById('modalAssignee').textContent = item.assignee || '-';
+        document.getElementById('modalTechType').textContent = item.techType || '-';
+        document.getElementById('modalJobType').textContent = item.jobType || '-';
+        document.getElementById('modalNote').textContent = item.note || '-';
+
+        const isCompleted = item.status.includes('เสร็จแล้ว');
+        const stBadge = document.getElementById('modalStatusBadge');
+        stBadge.className = `badge-pill-custom ${isCompleted ? 'bg-success text-white' : 'bg-warning text-dark'}`;
+        stBadge.innerHTML = `<i class="fa-solid ${isCompleted ? 'fa-check' : 'fa-hourglass-half'}"></i> ${item.status}`;
+
+        const prBadge = document.getElementById('modalPriorityBadge');
+        if (item.priority.includes('สูง')) {
+            prBadge.className = 'badge-pill-custom bg-danger text-white';
+        } else {
+            prBadge.className = 'badge-pill-custom bg-secondary text-white';
+        }
+        prBadge.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ความสำคัญ: ${item.priority}`;
+
+        modalInstance.show();
+    }
+
+    // Export to UTF-8 CSV with BOM for Thai language Excel support
+    function exportToCSV() {
+        if (!currentFilteredData || currentFilteredData.length === 0) {
+            alert('ไม่มีข้อมูลที่สามารถส่งออกได้');
+            return;
+        }
+
+        const headers = ["ลำดับ", "วันที่มอบหมาย", "กำหนดวันเสร็จ", "เสร็จจริง", "รายละเอียดงาน", "เครื่องจักร", "หน่วยงาน", "ผู้รับผิดชอบ", "ประเภทช่าง", "ประเภทงาน", "ความสำคัญ", "สถานะ", "หมายเหตุ"];
+        const rows = currentFilteredData.map(d => [
+            d.index,
+            `"${d.dateAssigned.replace(/"/g, '""')}"`,
+            `"${d.dateDue.replace(/"/g, '""')}"`,
+            `"${d.dateDone.replace(/"/g, '""')}"`,
+            `"${d.detail.replace(/"/g, '""')}"`,
+            `"${d.machine.replace(/"/g, '""')}"`,
+            `"${d.dept.replace(/"/g, '""')}"`,
+            `"${d.assignee.replace(/"/g, '""')}"`,
+            `"${d.techType.replace(/"/g, '""')}"`,
+            `"${d.jobType.replace(/"/g, '""')}"`,
+            `"${d.priority.replace(/"/g, '""')}"`,
+            `"${d.status.replace(/"/g, '""')}"`,
+            `"${(d.note || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(e => e.join(','))].join("\r\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `Maintenance_Dashboard_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+<!-- Bootstrap Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
