@@ -663,10 +663,16 @@
         <!-- Chart 2: ภาระงานและผลงานตามผู้รับผิดชอบ -->
         <div class="col-12 col-xl-6">
             <div class="dashboard-card p-4 h-100">
-                <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <div>
                         <h6 class="fw-bold mb-1"><i class="fa-solid fa-user-check text-success me-2"></i>ภาระงานและผลงานตามผู้รับผิดชอบ (By Technician)</h6>
                         <small class="text-muted">เปรียบเทียบงานที่เสร็จสิ้นแล้ว กับงานที่กำลังดำเนินการของแต่ละบุคคล</small>
+                    </div>
+                    <div class="form-check form-switch m-0 d-flex align-items-center gap-2 bg-body-tertiary px-3 py-1 rounded-pill border border-subtle shadow-sm">
+                        <input class="form-check-input ms-0 me-1" type="checkbox" role="switch" id="toggleActiveTechOnly" checked onchange="onToggleActiveTech()">
+                        <label class="form-check-label small fw-semibold text-body text-nowrap" for="toggleActiveTechOnly" style="cursor: pointer;">
+                            เฉพาะช่างปัจจุบัน
+                        </label>
                     </div>
                 </div>
                 <div style="position: relative; height: 320px;">
@@ -4448,6 +4454,16 @@
     let currentSortAsc = false; // default newest first
     let activeQuickPill = 'all';
 
+    // รายชื่อช่างที่ลาออก/ไม่ต้องการให้แสดงบนกราฟ (สามารถเพิ่มชื่อในลิสต์นี้ได้)
+    const INACTIVE_TECHNICIANS = ['ปิยะ'];
+    let showActiveTechOnly = true;
+
+    function onToggleActiveTech() {
+        const toggle = document.getElementById('toggleActiveTechOnly');
+        showActiveTechOnly = toggle ? toggle.checked : true;
+        updateCharts(currentFilteredData);
+    }
+
     // Chart.js Instances
     let chartMachine = null;
     let chartTechnician = null;
@@ -4917,7 +4933,13 @@
         });
 
         // 2. Technician Workload (Stacked Completed vs Pending)
-        const assignees = [...new Set(allData.map(d => d.assignee).filter(Boolean))];
+        let assignees = [...new Set(allData.map(d => d.assignee).filter(Boolean))];
+
+        // กรองช่างที่ลาออกออกหากเปิดโหมด "เฉพาะช่างปัจจุบัน"
+        if (showActiveTechOnly) {
+            assignees = assignees.filter(name => !INACTIVE_TECHNICIANS.includes(name));
+        }
+
         const techCompleted = [];
         const techPending = [];
         const techTotals = {};
@@ -4936,7 +4958,7 @@
         chartTechnician = new Chart(tCtx, {
             type: 'bar',
             data: {
-                labels: assignees,
+                labels: assignees.map(name => INACTIVE_TECHNICIANS.includes(name) ? `${name} (ลาออก)` : name),
                 datasets: [
                     {
                         label: 'เสร็จแล้ว',
@@ -5000,13 +5022,24 @@
         // Summary pills for technicians
         const tSum = document.getElementById('technicianSummary');
         if (tSum) {
-            tSum.innerHTML = assignees.map(name => {
+            let pillsHtml = assignees.map(name => {
                 const info = techTotals[name] || { total: 0, comp: 0, pend: 0 };
+                const isInactive = INACTIVE_TECHNICIANS.includes(name);
+                const tag = isInactive ? ' <span class="badge bg-danger-subtle text-danger rounded-pill px-1">ลาออก</span>' : '';
                 return `<span class="badge bg-secondary-subtle text-body border border-subtle rounded-pill px-3 py-1 small">
-                    <strong>${name}</strong>: รวม ${info.total} งาน 
+                    <strong>${name}</strong>${tag}: รวม ${info.total} งาน 
                     (<span class="text-success">เสร็จ ${info.comp}</span>${info.pend > 0 ? `, <span class="text-warning-emphasis">ค้าง ${info.pend}</span>` : ''})
                 </span>`;
             }).join(' ');
+
+            if (showActiveTechOnly) {
+                const hiddenInactive = INACTIVE_TECHNICIANS.filter(n => allData.some(d => d.assignee === n));
+                if (hiddenInactive.length > 0) {
+                    pillsHtml += ` <span class="badge bg-light text-muted border border-subtle rounded-pill px-2 py-1 small" title="คลิกสวิตช์ด้านบนเพื่อแสดง"><i class="fa-solid fa-user-slash me-1 text-secondary"></i>ซ่อนช่างที่ลาออก (${hiddenInactive.join(', ')})</span>`;
+                }
+            }
+
+            tSum.innerHTML = pillsHtml;
         }
 
         // 3. Job Type Breakdown
